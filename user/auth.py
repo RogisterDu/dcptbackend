@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from model import User
+from .model import User
 
 auth_blueprint = Blueprint('auth', __name__)
 

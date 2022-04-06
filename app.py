@@ -1,14 +1,18 @@
 from flask import Flask
 from config import Config
 from database import db
-from auth import auth_blueprint
+from user.auth import auth_blueprint
+from vistor.visitor_blueprint import visitor_blueprint
 
 app = Flask(__name__)
 
+# 注册数据库
 app.config.from_object(Config)
 db.init_app(app)
 
+# 注册蓝图
 app.register_blueprint(auth_blueprint)
+app.register_blueprint(visitor_blueprint)
 
 
 @app.route('/')
