@@ -1,11 +1,14 @@
+import json
+import time
+
 from flask import Blueprint, request
-from database import db
+from .model import db
 from .model import Visitor
-from sqlalchemy.orm import sessionmaker
 
 visitor_blueprint = Blueprint('visitor', __name__)
 
 
+# 分页查询所有访客
 @visitor_blueprint.route('/visitor/query/paging', methods=['POST'])
 def vistorlist():
     pageno = int(request.json.get('pageNo'))
@@ -36,55 +39,52 @@ def vistorlist():
         }
 
 
+# 添加访客记录
 @visitor_blueprint.route('/visitor/command/addVisitor', methods=['POST'])
-def AddVisitor():
+def addVisitor():
+    # print(request.get_json())
     # add a new visitor
     name = request.json.get('name')
     temperature = request.json.get('temperature')
     contact = request.json.get('contact')
     address = request.json.get('address')
-    time = request.json.get('time')
+    # get now time
+    now_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     pcr = request.json.get('PCR')
     is_safe = request.json.get('is_safe')
     is_touch = request.json.get('is_touch')
     identity_id = request.json.get('identityID')
-    greenCode = request.json.get('greenCode')
+    green_code = request.json.get('greenCode')
     new_visitor = Visitor(
         name=name,
         temperature=temperature,
         contact=contact,
         address=address,
-        time=time,
-        provinceId=pcr[0].value,
-        provinceDesc=pcr[0].label,
-        cityId=pcr[1].value,
-        cityDesc=pcr[1].label,
-        districtId=pcr[2].value,
-        districtDesc=pcr[2].label,
+        time=now_time,
+        provinceId=pcr[0]['value'],
+        provinceDesc=pcr[0]['label'],
+        cityId=pcr[1]['value'],
+        cityDesc=pcr[1]['label'],
+        disctrictId=pcr[2]['value'],
+        disctrictDesc=pcr[2]['label'],
         is_safe=is_safe,
         is_touch=is_touch,
-        greenCode=greenCode,
+        greenCode=green_code,
         identityID=identity_id,
     )
     db.session.add(new_visitor)
-    new_id = db.session.commit()
-    if new_id:
+    try:
+        db.session.commit()
         return {
             'code': 1,
             'success': True,
-            'data': {
-                'code': 1,
-                'success': True,
-                'message': '添加成功'
-            }
+            'message': '添加成功'
         }
-    else:
+    except Exception as e:
+        print(e)
         return {
             'code': 0,
             'success': False,
-            'data': {
-                'code': 0,
-                'success': False,
-                'message': '添加失败'
-            }
+            'message': '添加失败'
         }
+
