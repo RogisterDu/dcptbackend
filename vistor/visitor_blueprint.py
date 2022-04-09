@@ -1,9 +1,12 @@
+import datetime
 import json
 import time
 
 from flask import Blueprint, request
-from .model import db
+from sqlalchemy import and_, text
+
 from .model import Visitor
+from .model import db
 
 visitor_blueprint = Blueprint('visitor', __name__)
 
@@ -11,10 +14,20 @@ visitor_blueprint = Blueprint('visitor', __name__)
 # 分页查询所有访客
 @visitor_blueprint.route('/visitor/query/paging', methods=['POST'])
 def vistorlist():
+    name = request.json.get('name')
+    contact = request.json.get('contact')
+    start = request.json.get('visitTimeStart')
+    end = request.json.get('visitTimeEnd')
+
     pageno = int(request.json.get('pageNo'))
     pagesize = int(request.json.get('pageSize'))
-    paginate_obj = Visitor.query.paginate(pageno, pagesize, error_out=False)
-    total_page = paginate_obj.pages
+    paginate_obj = Visitor.query.filter(
+        Visitor.is_deleted == 0,
+        Visitor.name.like('%' + name + '%') if name is not None else text(''),
+        Visitor.contact.like('%' + contact + '%') if contact is not None else text(''),
+        and_(Visitor.time >= start, Visitor.time <= end) if start is not None and end is not None else text(''),
+    ).order_by(Visitor.time).paginate(pageno, pagesize, error_out=False)
+    total = paginate_obj.total
     visitor_list = []
     for temp in paginate_obj.items:
         visitor_list.append(
@@ -23,19 +36,31 @@ def vistorlist():
                 'name': temp.name,
                 'temperature': temp.temperature,
                 'contact': temp.contact,
-                'time': temp.time,
+                # transform GMT time format to local time format
+                'time': datetime.datetime.strptime(str(temp.time), "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S"),
+                'pcr': json.loads(temp.pcr_json),
                 'address': temp.address,
+                'greenCode': temp.greenCode,
+                'is_safe': temp.is_safe,
+                'is_touch': temp.is_touch,
+                'identityID': temp.identityID,
             }
         )
-    if visitor_list:
+    if visitor_list is not None:
         print(visitor_list)
         return {
             'code': 1,
             'success': True,
             'data': {
                 'data': visitor_list,
-                'total': total_page
+                'total': total
             }
+        }
+    else:
+        return {
+            'code': 0,
+            'success': False,
+            'message': '记录为空'
         }
 
 
@@ -61,16 +86,15 @@ def addVisitor():
         contact=contact,
         address=address,
         time=now_time,
-        provinceId=pcr[0]['value'],
-        provinceDesc=pcr[0]['label'],
-        cityId=pcr[1]['value'],
-        cityDesc=pcr[1]['label'],
-        disctrictId=pcr[2]['value'],
-        disctrictDesc=pcr[2]['label'],
+        provinceDesc=pcr[0],
+        cityDesc=pcr[1],
+        disctrictDesc=len(pcr) > 2 and pcr[2] or '',
         is_safe=is_safe,
         is_touch=is_touch,
         greenCode=green_code,
         identityID=identity_id,
+        pcr_json=json.dumps(pcr, ensure_ascii=False),
+        is_deleted=0
     )
     db.session.add(new_visitor)
     try:
@@ -88,3 +112,24 @@ def addVisitor():
             'message': '添加失败'
         }
 
+
+# 作废访客记录
+@visitor_blueprint.route('/visitor/command/invalid', methods=['POST'])
+def deleteVisitor():
+    visitor_id = request.json.get('id')
+    visitor = Visitor.query.filter(Visitor.id == visitor_id).first()
+    if visitor:
+        visitor.is_deleted = 1
+        db.session.add(visitor)
+        db.session.commit()
+        return {
+            'code': 1,
+            'success': True,
+            'message': '作废成功'
+        }
+    else:
+        return {
+            'code': 0,
+            'success': False,
+            'message': '作废失败'
+        }
