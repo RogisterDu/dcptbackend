@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+
 from .model import User
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -19,3 +20,20 @@ def login():
             'code': '失败',
             'message': '用户名或者密码错误'
         }
+
+
+@auth_blueprint.route('/doctor/query/list', methods=['GET'])
+def getDoctorList():
+    doctor = User.query.all()
+    doctor_list = []
+    for i in doctor:
+        doctor_list.append({
+            'code': i.id,
+            'desc': i.realName,
+        })
+    return {
+        'code': 1,
+        'data': {
+            'data': doctor_list
+        }
+    }
