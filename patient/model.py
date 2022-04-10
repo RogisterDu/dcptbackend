@@ -18,3 +18,7 @@ class Patient(db.Model):
     last_visit = db.Column(db.DATETIME(), nullable=False)
     debt = db.Column(db.Integer(), nullable=False)
     identityID = db.Column(db.String(255), nullable=False)
+    qq = db.Column(db.String(255), nullable=True)
+    email = db.Column(db.String(255), nullable=True)
+    allergic = db.Column(db.String(255), nullable=True)
+    history = db.Column(db.String(255), nullable=True)

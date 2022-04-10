@@ -2,6 +2,7 @@ from flask import Flask
 
 from config import Config
 from database import db
+from medical.medical_blueprint import medical_blueprint
 from patient.patient_blueprint import patient_blueprint
 from user.auth import auth_blueprint
 from vistor.visitor_blueprint import visitor_blueprint
@@ -16,6 +17,7 @@ db.init_app(app)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(visitor_blueprint)
 app.register_blueprint(patient_blueprint)
+app.register_blueprint(medical_blueprint)
 
 
 @app.route('/')

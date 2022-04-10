@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 
@@ -17,7 +18,12 @@ def patientList():
     total = Patient.query.count()
     patient_list = []
     for info in paginate_obj:
-        patient_list.append(info.to_dict())
+        patient_list.append({
+            'id': info.id,
+            'name': info.name,
+            'contact': info.contact,
+            'tags': json.loads(info.tags),
+        })
     return {
         'code': 200,
         'msg': 'success',
@@ -44,10 +50,10 @@ def addPatient():
     patient = Patient.query.filter_by(identityID=identity_id).first()
     if patient is not None:
         return {
-            'code': 2,
+            'code': 1,
             'message': 'patient is exist',
             'data': {
-                'patient_id': patient.id
+                'id': patient.id
             }
         }
     new_patient = Patient(
@@ -65,14 +71,19 @@ def addPatient():
         # get birthday from identity_id
         debt=0,
         is_deleted=0,
+        tags='[]',
     )
     db.session.add(new_patient)
     try:
+        new_id = db.session.flush()
         db.session.commit()
         return {
             'code': 1,
             'success': True,
-            'message': '添加成功'
+            'message': '添加成功',
+            'data': {
+                'id': new_id
+            }
         }
     except Exception as e:
         print(e)
@@ -82,3 +93,32 @@ def addPatient():
             'message': '添加失败',
             'error': str(e)
         }
+
+
+# get patient info by id
+@patient_blueprint.route('/patient/info/<int:patient_id>', methods=['GET'])
+def getPatientInfo(patient_id):
+    patient = Patient.query.filter_by(id=patient_id).first()
+    if patient is None:
+        return {
+            'code': 0,
+            'message': 'patient not found',
+            'data': {}
+        }
+    return {
+        'code': 1,
+        'message': 'success',
+        'data': {
+            'id': patient.id,
+            'name': patient.name,
+            'contact': patient.contact,
+            'sex': patient.sex,
+            'qq': patient.qq,
+            'email': patient.email,
+            'birth': datetime.datetime.strptime(str(patient.birthday), "%Y-%m-%d").strftime(
+                "%Y-%m-%d"),
+            'last_visit': patient.last_visit,
+            'pcr': json.loads(patient.pcr_json),
+            'address': patient.address,
+        }
+    }
