@@ -1,7 +1,9 @@
 from flask import Flask
 
+from charge.charge_blueprint import charge_blueprint
 from config import Config
 from database import db
+from fee.fee_blueprint import fee_blueprint
 from medical.medical_blueprint import medical_blueprint
 from patient.patient_blueprint import patient_blueprint
 from user.auth import auth_blueprint
@@ -18,6 +20,8 @@ app.register_blueprint(auth_blueprint)
 app.register_blueprint(visitor_blueprint)
 app.register_blueprint(patient_blueprint)
 app.register_blueprint(medical_blueprint)
+app.register_blueprint(charge_blueprint)
+app.register_blueprint(fee_blueprint)
 
 
 @app.route('/')
