@@ -1,2 +1,2 @@
-
-database.py
+config.py
+*.pyc
