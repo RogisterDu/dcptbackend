@@ -144,7 +144,7 @@ def toCharge():
         }
     # FeeDetail 收费
     fee.paid = fee.paid + new_pay
-    if fee.status == 2:
+    if fee.status == 1 or fee.status == 0:
         fee.should = total_pay
     if fee.paid > fee.should:
         return {
@@ -167,5 +167,36 @@ def toCharge():
         return {
             'code': 0,
             'message': '收费失败',
+            'error': str(e)
+        }
+
+
+# 作废
+@fee_blueprint.route('/fee/command/invalid/id/<int:fee_id>', methods=['GET'])
+def toVoidRecord(fee_id):
+    fee = Fee.query.filter_by(id=fee_id, is_deleted=0).first()
+    if fee is None:
+        return {
+            'code': 0,
+            'message': '收费记录不存在',
+        }
+    if fee.status == 4:
+        return {
+            'code': 0,
+            'message': '收费记录状态不正确',
+        }
+    fee.status = 4
+    try:
+        db.session.add(fee)
+        db.session.commit()
+        return {
+            'code': 1,
+            'message': 'success',
+        }
+    except Exception as e:
+        print(e)
+        return {
+            'code': 0,
+            'message': '作废失败',
             'error': str(e)
         }
