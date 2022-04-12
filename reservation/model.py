@@ -7,7 +7,7 @@ class Reserve(db.Model):
     patient_id = db.Column(db.INTEGER(), nullable=False)
     doctor_id = db.Column(db.INTEGER(), nullable=False)
     operator_id = db.Column(db.INTEGER(), nullable=False)
-    operator_time = db.Column(db.DATETIME(), nullable=False)
+    operator_time = db.Column(db.DATETIME(), nullable=True)
     title = db.Column(db.VARCHAR(255), nullable=False)
     rank = db.Column(db.INTEGER(), nullable=False)
     description = db.Column(db.VARCHAR(255), nullable=False)
