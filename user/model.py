@@ -13,3 +13,4 @@ class User(db.Model):
     last_login = db.Column(db.DATETIME(), nullable=False)
     created_time = db.Column(db.DATETIME(), nullable=False)
     created_Id = db.Column(db.INTEGER(), nullable=False)
+    jurisdiction = db.Column(db.INTEGER(), nullable=False)
