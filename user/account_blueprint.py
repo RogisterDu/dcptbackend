@@ -50,7 +50,7 @@ def getAccountList():
         }
 
 
-@account_blueprint.route('/account/item/command/add', methods=['POST'])
+@account_blueprint.route('/account/command/add', methods=['POST'])
 def addNewAccountItem():
     account = request.json.get('account')
     phone = request.json.get('phone')
@@ -97,57 +97,44 @@ def addNewAccountItem():
             'message': '添加失败'
         }
 
-# @account_blueprint.route('/account/item/command/edit', methods=['POST'])
-# def editaccountItem():
-#     edit_id = request.json.get('id')
-#     name = request.json.get('name')
-#     unit = request.json.get('unit')
-#     unit_price = request.json.get('unitPrice')
-#     status = request.json.get('status')
-#     code = request.json.get('code')
-#     item_type = request.json.get('type')
-#
-#     # query_account = account.query.filter(
-#     #     account.is_deleted == 0,
-#     #     account.code == code,
-#     # ).first()
-#     # if query_account is not None:
-#     #     return {
-#     #         'code': 0,
-#     #         'success': False,
-#     #         'message': '该编码已存在'
-#     #     }
-#
-#     edit_account = account.query.filter(
-#         account.id == edit_id,
-#     ).first()
-#     if edit_account is None:
-#         return {
-#             'code': 0,
-#             'success': False,
-#             'message': '该记录不存在'
-#         }
-#     edit_account.name = name,
-#     edit_account.abbreviation = pinyin.get_initial(name, delimiter="").upper(),
-#     edit_account.unit = unit,
-#     edit_account.unit_price = unit_price,
-#     edit_account.code = code,
-#     edit_account.status = status,
-#     edit_account.item_type = item_type
-#
-#     db.session.add(edit_account)
-#     try:
-#         db.session.commit()
-#         return {
-#             'code': 1,
-#             'success': True,
-#             'message': '修改成功'
-#         }
-#     except Exception as e:
-#         print(e)
-#         return {
-#             'code': 0,
-#             'success': False,
-#             'message': '修改失败',
-#             'error': str(e)
-#         }
+
+@account_blueprint.route('/account/command/edit', methods=['POST'])
+def editAccount():
+    edit_id = request.json.get('id')
+    account = request.json.get('account')
+    phone = request.json.get('phone')
+    new_password = request.json.get('password')
+    real_name = request.json.get('realName')
+    status = request.json.get('status')
+
+    edit_account = User.query.filter(
+        User.id == edit_id,
+    ).first()
+    if edit_account is None:
+        return {
+            'code': 0,
+            'success': False,
+            'message': '该记录不存在'
+        }
+    edit_account.account = account,
+    edit_account.phone = phone,
+    edit_account.password = new_password if new_password is not None else edit_account.password,
+    edit_account.realName = real_name,
+    edit_account.status = status,
+
+    db.session.add(edit_account)
+    try:
+        db.session.commit()
+        return {
+            'code': 1,
+            'success': True,
+            'message': '修改成功'
+        }
+    except Exception as e:
+        print(e)
+        return {
+            'code': 0,
+            'success': False,
+            'message': '修改失败',
+            'error': str(e)
+        }

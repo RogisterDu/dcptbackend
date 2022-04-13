@@ -7,6 +7,7 @@ from fee.fee_blueprint import fee_blueprint
 from medical.medical_blueprint import medical_blueprint
 from patient.patient_blueprint import patient_blueprint
 from reservation.reserve_blueprint import reserve_blueprint
+from user.account_blueprint import account_blueprint
 from user.auth import auth_blueprint
 from vistor.visitor_blueprint import visitor_blueprint
 
@@ -24,6 +25,7 @@ app.register_blueprint(medical_blueprint)
 app.register_blueprint(charge_blueprint)
 app.register_blueprint(fee_blueprint)
 app.register_blueprint(reserve_blueprint)
+app.register_blueprint(account_blueprint)
 
 
 @app.route('/')
