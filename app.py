@@ -5,6 +5,7 @@ from config import Config
 from database import db
 from fee.fee_blueprint import fee_blueprint
 from medical.medical_blueprint import medical_blueprint
+from medical.template_blueprint import template_blueprint
 from patient.patient_blueprint import patient_blueprint
 from reservation.reserve_blueprint import reserve_blueprint
 from user.account_blueprint import account_blueprint
@@ -26,6 +27,7 @@ app.register_blueprint(charge_blueprint)
 app.register_blueprint(fee_blueprint)
 app.register_blueprint(reserve_blueprint)
 app.register_blueprint(account_blueprint)
+app.register_blueprint(template_blueprint)
 
 
 @app.route('/')

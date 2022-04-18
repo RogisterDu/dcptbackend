@@ -27,7 +27,7 @@ def query_medical_list(patient_id):
                 'doctor': record_item.realName,
                 'now': record.now,
                 'allergic': record.allergic,
-                'check_json': record.check_json,
+                'check': json.loads(record.check_json),
                 'main': record.main,
                 'cure': record.cure,
                 'advice': record.advice,
