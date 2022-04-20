@@ -1,14 +1,19 @@
 import datetime
 import json
+import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 
+import xlwt
 from flask import Blueprint, request
 from sqlalchemy import and_, text
 
+from task.model import Task
 from .model import Visitor
 from .model import db
 
 visitor_blueprint = Blueprint('visitor', __name__)
+executor = ThreadPoolExecutor()
 
 
 # 分页查询所有访客
@@ -133,3 +138,74 @@ def deleteVisitor():
             'success': False,
             'message': '作废失败'
         }
+
+
+@visitor_blueprint.route('/visitor/command/export', methods=['POST'])
+def exportData():
+    # 新建导出任务
+    # 导出状态  100 准备中 200 待下载 300 已经下载 400 失败
+    new_task = Task(
+        taskName='访客记录导出' + str(time.time()),
+        creator_id=1,
+        status=100,
+        statusDesc='',
+        file_url='',
+    )
+    db.session.add(new_task)
+    # 获取新插入的任务id
+    db.session.flush()
+    new_task_id = new_task.id
+    db.session.commit()
+    print('创建准备任务成功', new_task_id)
+    # Excel 异步导出
+    executor.submit(exportAsExcel, new_task_id)
+    return {
+        'code': 1,
+        'message': '已经添加进导出任务请查看导出任务列表',
+    }
+
+
+def exportAsExcel(task_id):
+    from app import app
+    with app.app_context():
+        try:
+            print('111', task_id)
+            wb = xlwt.Workbook()
+            ws = wb.add_sheet('来访日志')
+            ws.write(0, 0, "名字")
+            ws.write(0, 1, "联系电话")
+            ws.write(0, 3, "住址")
+            ws.write(0, 4, "来访时间")
+            dataw = Visitor.query.all()
+            print('222')
+            if dataw is not None:
+                for i in range(0, len(dataw)):
+                    visitor_i = dataw[i]
+                    ws.write(i + 1, 0, visitor_i.name)
+                    ws.write(i + 1, 1, visitor_i.contact)
+                    ws.write(i + 1, 2, visitor_i.address)
+                    ws.write(i + 1, 3, visitor_i.time)
+            now = str(time.time())
+            print('222')
+            path = "\\static\\excel\\"
+            file_name = "visitor_" + now + ".xls"
+            basedir = os.path.abspath(os.path.dirname(__file__))
+            file_path = basedir + path
+            # file_path = 'D:\\Project\\dcptbackend' + path
+            if not os.path.exists(file_path):
+                os.makedirs(file_path)
+            file_path = file_path + file_name
+            try:
+                f = open(file_path, 'r')
+                f.close()
+            except IOError:
+                f = open(file_path, 'w')
+            wb.save(file_path)
+            query_task = Task.query.filter(Task.id == task_id).first()
+            query_task.status = 200
+            query_task.file_url = file_path
+            db.session.add(query_task)
+            db.session.commit()
+            print('导出成功')
+        except Exception as e:
+            print(e)
