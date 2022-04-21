@@ -50,9 +50,12 @@ def addPatient():
     # find if the patient is existed
     patient = Patient.query.filter_by(identityID=identity_id).first()
     if patient is not None:
+        patient.last_visit = now_time
+        db.session.add(patient)
+        db.session.commit()
         return {
             'code': 1,
-            'message': 'patient is exist',
+            'message': '病人已存在，已处理为就诊状态',
             'data': {
                 'id': patient.id
             }
@@ -76,12 +79,13 @@ def addPatient():
     )
     db.session.add(new_patient)
     try:
-        new_id = db.session.flush()
+        db.session.flush()
+        new_id = new_patient.id
         db.session.commit()
         return {
             'code': 1,
             'success': True,
-            'message': '添加成功',
+            'message': '添加新病人成功',
             'data': {
                 'id': new_id
             }

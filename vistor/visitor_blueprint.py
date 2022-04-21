@@ -168,16 +168,17 @@ def exportData():
 def exportAsExcel(task_id):
     from app import app
     with app.app_context():
+        query_task = Task.query.filter(Task.id == task_id).first()
         try:
             print('111', task_id)
             wb = xlwt.Workbook()
             ws = wb.add_sheet('来访日志')
             ws.write(0, 0, "名字")
             ws.write(0, 1, "联系电话")
-            ws.write(0, 3, "住址")
-            ws.write(0, 4, "来访时间")
+            ws.write(0, 2, "住址")
+            ws.write(0, 3, "来访时间")
             dataw = Visitor.query.all()
-            print('222')
+
             if dataw is not None:
                 for i in range(0, len(dataw)):
                     visitor_i = dataw[i]
@@ -191,7 +192,6 @@ def exportAsExcel(task_id):
             file_name = "visitor_" + now + ".xls"
             basedir = os.path.abspath(os.path.dirname(__file__))
             file_path = basedir + path
-            # file_path = 'D:\\Project\\dcptbackend' + path
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             file_path = file_path + file_name
@@ -201,7 +201,6 @@ def exportAsExcel(task_id):
             except IOError:
                 f = open(file_path, 'w')
             wb.save(file_path)
-            query_task = Task.query.filter(Task.id == task_id).first()
             query_task.status = 200
             query_task.file_url = file_path
             db.session.add(query_task)
@@ -209,3 +208,7 @@ def exportAsExcel(task_id):
             print('导出成功')
         except Exception as e:
             print(e)
+            query_task.status = 400
+            query_task.statusDesc = str(e)
+            db.session.add(query_task)
+            db.session.commit()
