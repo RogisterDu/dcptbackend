@@ -193,3 +193,62 @@ def getAccess():
         'access': True,
         'message': '欢迎访问'
     }
+
+
+@account_blueprint.route('/account/command/self/edit', methods=['POST'])
+def editSelfAccount():
+    real_name = request.json.get('realName')
+    phone = request.json.get('phone')
+    uid = getUid()
+    edit_account = User.query.filter(
+        User.id == uid,
+    ).first()
+    if edit_account is None:
+        return {
+            'code': 0,
+            'message': '账号不存在'
+        }
+    if edit_account.status == 0:
+        return {
+            'code': 0,
+            'message': '账号已被禁用'
+        }
+    edit_account.realName = real_name
+    edit_account.phone = phone
+    db.session.add(edit_account)
+    try:
+        db.session.commit()
+        return {
+            'code': 1,
+            'message': '修改成功'
+        }
+    except Exception as e:
+        print(e)
+        return {
+            'code': 0,
+            'message': '修改失败',
+            'error': str(e)
+        }
+
+
+@account_blueprint.route('/account/command/self/info', methods=['GET'])
+def getSelfAccountInfo():
+    uid = getUid()
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return {
+            'code': 0,
+            'message': '账号不存在'
+        }
+    if query_user.status == 0:
+        return {
+            'code': 0,
+            'message': '账号已被禁用'
+        }
+    return {
+        'code': 1,
+        'data': {
+            'realName': query_user.realName,
+            'phone': query_user.phone,
+        }
+    }
