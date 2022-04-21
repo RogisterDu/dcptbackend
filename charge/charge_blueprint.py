@@ -2,9 +2,28 @@ import pinyin
 from flask import Blueprint, request
 from sqlalchemy import text, or_
 
+from user.model import User
 from .model import Charge, db
 
 charge_blueprint = Blueprint('charge', __name__)
+
+
+def getUid():
+    uid = request.headers.get('Authorization')
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return None
+    return query_user.id
+
+
+@charge_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
 
 
 @charge_blueprint.route('/charge/item/enable/query/paging', methods=['POST'])

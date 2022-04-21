@@ -2,12 +2,31 @@ import datetime
 
 from flask import Blueprint, request
 
+from user.model import User
 from .model import Fee, db, FeeDetail
 
 fee_blueprint = Blueprint('fee', __name__)
 
 
 # status 0 空收费项 1未收费 2欠费 3完成 4作废订单
+
+def getUid():
+    uid = request.headers.get('Authorization')
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return None
+    return query_user.id
+
+
+@fee_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
+
 
 # 查询病人的收费信息
 @fee_blueprint.route('/fee/query/list/id/<int:patient_id>', methods=['GET'])

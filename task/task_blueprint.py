@@ -4,9 +4,28 @@ import time
 from flask import Blueprint, request
 from sqlalchemy import text
 
+from user.model import User
 from .model import Task, db
 
 task_blueprint = Blueprint('task', __name__)
+
+
+def getUid():
+    uid = request.headers.get('Authorization')
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return None
+    return query_user.id
+
+
+@task_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
 
 
 @task_blueprint.route('/task/query/list/paging', methods=['POST'])

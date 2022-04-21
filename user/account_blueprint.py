@@ -8,6 +8,24 @@ from .model import User, db
 account_blueprint = Blueprint('account', __name__)
 
 
+def getUid():
+    uid = request.headers.get('Authorization')
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return None
+    return query_user.id
+
+
+@account_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
+
+
 @account_blueprint.route('/account/normal/query/paging', methods=['POST'])
 def getAccountList():
     name = request.json.get('name')
@@ -138,3 +156,40 @@ def editAccount():
             'message': '修改失败',
             'error': str(e)
         }
+
+
+@account_blueprint.route('/doctor/query/list', methods=['GET'])
+def getDoctorList():
+    doctor = User.query.all()
+    doctor_list = []
+    for i in doctor:
+        doctor_list.append({
+            'code': i.id,
+            'desc': i.realName,
+        })
+    return {
+        'code': 1,
+        'data': {
+            'data': doctor_list
+        }
+    }
+
+
+@account_blueprint.route('/account/access', methods=['GET'])
+def getAccess():
+    user_id = getUid()
+    query_user = User.query.filter_by(id=user_id).first()
+    if query_user is None:
+        return {
+            'access': False,
+            'message': '该用户不存在'
+        }
+    if query_user.jurisdiction == 0:
+        return {
+            'access': False,
+            'message': '没有权限'
+        }
+    return {
+        'access': True,
+        'message': '欢迎访问'
+    }

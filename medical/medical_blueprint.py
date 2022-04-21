@@ -9,6 +9,24 @@ from .model import Medical, db
 medical_blueprint = Blueprint('medical', __name__)
 
 
+def getUid():
+    uid = request.headers.get('Authorization')
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return None
+    return query_user.id
+
+
+@medical_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
+
+
 # 查询病历列表
 @medical_blueprint.route('/medical/query/list/<int:patient_id>', methods=['GET'])
 def query_medical_list(patient_id):

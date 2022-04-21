@@ -13,7 +13,7 @@ def login():
     if user is not None:
         return {
             'code': 1,
-            'token': '123456',
+            'token': user.id,
             'userInfo': {
                 'id': user.id,
                 'name': user.realName,
@@ -27,18 +27,3 @@ def login():
         }
 
 
-@auth_blueprint.route('/doctor/query/list', methods=['GET'])
-def getDoctorList():
-    doctor = User.query.all()
-    doctor_list = []
-    for i in doctor:
-        doctor_list.append({
-            'code': i.id,
-            'desc': i.realName,
-        })
-    return {
-        'code': 1,
-        'data': {
-            'data': doctor_list
-        }
-    }

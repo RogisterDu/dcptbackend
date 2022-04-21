@@ -3,9 +3,28 @@ import json
 
 from flask import Blueprint, request
 
+from user.model import User
 from .model import Dicom
 
 dicom_blueprint = Blueprint('dicom', __name__)
+
+
+def getUid():
+    uid = request.headers.get('Authorization')
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return None
+    return query_user.id
+
+
+@dicom_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
 
 
 @dicom_blueprint.route('/dicom/query/list/paginate', methods=['POST'])

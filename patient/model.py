@@ -22,3 +22,4 @@ class Patient(db.Model):
     email = db.Column(db.String(255), nullable=True)
     allergic = db.Column(db.String(255), nullable=True)
     history = db.Column(db.String(255), nullable=True)
+    habit = db.Column(db.String(255), nullable=True)

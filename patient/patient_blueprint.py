@@ -5,10 +5,29 @@ import time
 from flask import Blueprint, request
 from sqlalchemy import or_, text
 
+from user.model import User
 from .model import Patient
 from .model import db
 
 patient_blueprint = Blueprint('patient', __name__)
+
+
+def getUid():
+    uid = request.headers.get('Authorization')
+    query_user = User.query.filter_by(id=uid).first()
+    if query_user is None:
+        return None
+    return query_user.id
+
+
+@patient_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
 
 
 @patient_blueprint.route('/patient/list/paging', methods=['GET'])
@@ -43,6 +62,13 @@ def addPatient():
     contact = request.json.get('contact')
     address = request.json.get('address')
     identity_id = request.json.get('identity_id')
+    history = request.json.get('history')
+    allergic = request.json.get('allergic')
+    habit = request.json.get('habit')
+    email = request.json.get('email')
+    qq = request.json.get('qq')
+    tags = request.json.get('tags')
+
     # get now time
     now_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     pcr = request.json.get('PCR')
@@ -55,7 +81,7 @@ def addPatient():
         db.session.commit()
         return {
             'code': 1,
-            'message': '病人已存在，已处理为就诊状态',
+            'message': '病人已存在',
             'data': {
                 'id': patient.id
             }
@@ -75,7 +101,12 @@ def addPatient():
         # get birthday from identity_id
         debt=0,
         is_deleted=0,
-        tags='[]',
+        tags=json.dumps(tags, ensure_ascii=False) if tags is not None else '[]',
+        qq=qq if qq is not None else '',
+        email=email if email is not None else '',
+        allergic=allergic if allergic is not None else '',
+        habit=habit if habit is not None else '',
+        history=history if history is not None else '',
     )
     db.session.add(new_patient)
     try:
@@ -97,6 +128,61 @@ def addPatient():
             'success': False,
             'message': '添加失败',
             'error': str(e)
+        }
+
+
+@patient_blueprint.route('/patient/command/edit', methods=['POST'])
+def editPatient():
+    patient_id = request.json.get('id')
+    query_patient = Patient.query.filter_by(id=patient_id).first()
+    if query_patient is None:
+        return {
+            'code': 0,
+            'message': '病人不存在',
+        }
+
+    name = request.json.get('name')
+    sex = request.json.get('sex')
+    contact = request.json.get('contact')
+    address = request.json.get('address')
+    identity_id = request.json.get('identity_id')
+    history = request.json.get('history')
+    allergic = request.json.get('allergic')
+    habit = request.json.get('habit')
+    email = request.json.get('email')
+    qq = request.json.get('qq')
+    pcr = request.json.get('PCR')
+    tags = request.json.get('tags')
+
+    query_patient.name = name
+    query_patient.tags = json.dumps(tags, ensure_ascii=False) if tags is not None else '[]'
+    query_patient.sex = sex
+    query_patient.contact = contact
+    query_patient.address = address
+    query_patient.identityID = identity_id
+    query_patient.history = history
+    query_patient.allergic = allergic
+    query_patient.habit = habit
+    query_patient.qq = qq
+    query_patient.email = email
+    query_patient.birthday = "{0}-{1}-{2}".format(identity_id[6:10], identity_id[10:12], identity_id[12:14])
+    query_patient.provinceDesc = pcr[0]
+    query_patient.cityDesc = pcr[1]
+    query_patient.disctrictDesc = len(pcr) > 2 and pcr[2] or ''
+    query_patient.pcr_json = json.dumps(pcr, ensure_ascii=False)
+
+    db.session.add(query_patient)
+    try:
+        db.session.commit()
+        return {
+            'code': 1,
+            'message': '修改成功',
+        }
+    except Exception as e:
+        print(e)
+        return {
+            'code': 0,
+            'message': '修改失败',
         }
 
 
@@ -123,8 +209,13 @@ def getPatientInfo(patient_id):
             'birth': datetime.datetime.strptime(str(patient.birthday), "%Y-%m-%d").strftime(
                 "%Y-%m-%d"),
             'last_visit': patient.last_visit,
-            'pcr': json.loads(patient.pcr_json),
+            'PCR': json.loads(patient.pcr_json),
             'address': patient.address,
+            'tags': json.loads(patient.tags),
+            'identity_id': patient.identityID,
+            'history': patient.history,
+            'allergic': patient.allergic,
+            'habit': patient.habit,
         }
     }
 
