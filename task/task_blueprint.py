@@ -1,5 +1,4 @@
 import datetime
-import time
 
 from flask import Blueprint, request
 from sqlalchemy import text
@@ -68,7 +67,6 @@ def updateTaskStatus():
     task = Task.query.filter_by(id=task_id).first()
     task.status = 300
     task.statusDesc = '已完成'
-    task.finish_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     db.session.add(task)
     db.session.commit()
     return {

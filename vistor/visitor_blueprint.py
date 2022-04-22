@@ -235,8 +235,10 @@ def exportAsExcel(task_id):
             except IOError:
                 f = open(file_path, 'w')
             wb.save(file_path)
+            now_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             query_task.status = 200
             query_task.file_url = path + file_name
+            query_task.finish_time = now_time
             db.session.add(query_task)
             db.session.commit()
             print('导出成功')
