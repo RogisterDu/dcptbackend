@@ -212,8 +212,8 @@ def exportAsExcel(task_id):
             print('222')
             path = "\\static\\excel\\"
             file_name = "visitor_" + now + ".xls"
-            basedir = os.path.abspath(os.path.dirname(__file__))
-            file_path = basedir + path
+            basedir = '/static/excel/'
+            file_path = basedir
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             file_path = file_path + file_name

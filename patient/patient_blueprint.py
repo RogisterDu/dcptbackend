@@ -45,7 +45,7 @@ def patientList():
         debt_fee = Fee.query.filter(and_(Fee.patient_id == info.id, Fee.should > Fee.paid)).first()
         tags = []
         if debt_fee is not None:
-            tags.append('未缴费')
+            tags.append('欠费')
         tags.extend(json.loads(info.tags))
         patient_list.append({
             'id': info.id,

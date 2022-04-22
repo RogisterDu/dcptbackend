@@ -38,7 +38,7 @@ def queryTaskListPaging():
     task_status = request.json.get('taskStatus')
     paginate_obj = Task.query.filter(
         Task.status == task_status if task_status is not None else text('')
-    ).paginate(page_no, page_size, error_out=False)
+    ).order_by(db.desc(Task.finish_time)).paginate(page_no, page_size, error_out=False)
     total = paginate_obj.total
     query_dicom = paginate_obj.items
     task_list = []

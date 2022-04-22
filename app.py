@@ -35,7 +35,7 @@ from vistor.visitor_blueprint import visitor_blueprint
 # 引入蓝图
 # 引入 flask-redis
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # 注册数据库
 app.config.from_object(Config)
