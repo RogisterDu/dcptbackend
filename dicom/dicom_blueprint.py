@@ -3,6 +3,7 @@ import json
 
 from flask import Blueprint, request
 
+from redisInit import rs
 from user.model import User
 from .model import Dicom
 
@@ -10,11 +11,14 @@ dicom_blueprint = Blueprint('dicom', __name__)
 
 
 def getUid():
-    uid = request.headers.get('Authorization')
-    query_user = User.query.filter_by(id=uid).first()
-    if query_user is None:
+    token = request.headers.get('Authorization')
+    if token is None:
         return None
-    return query_user.id
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
+        return None
+    return uid.decode()
 
 
 @dicom_blueprint.before_request

@@ -3,9 +3,10 @@ import json
 import time
 
 from flask import Blueprint, request
-from sqlalchemy import or_, text
+from sqlalchemy import or_, text, and_
 
-from user.model import User
+from fee.model import Fee
+from redisInit import rs
 from .model import Patient
 from .model import db
 
@@ -13,11 +14,14 @@ patient_blueprint = Blueprint('patient', __name__)
 
 
 def getUid():
-    uid = request.headers.get('Authorization')
-    query_user = User.query.filter_by(id=uid).first()
-    if query_user is None:
+    token = request.headers.get('Authorization')
+    if token is None:
         return None
-    return query_user.id
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
+        return None
+    return uid.decode()
 
 
 @patient_blueprint.before_request
@@ -38,11 +42,16 @@ def patientList():
     total = Patient.query.count()
     patient_list = []
     for info in paginate_obj:
+        debt_fee = Fee.query.filter(and_(Fee.patient_id == info.id, Fee.should > Fee.paid)).first()
+        tags = []
+        if debt_fee is not None:
+            tags.append('未缴费')
+        tags.extend(json.loads(info.tags))
         patient_list.append({
             'id': info.id,
             'name': info.name,
             'contact': info.contact,
-            'tags': json.loads(info.tags),
+            'tags': tags,
         })
     return {
         'code': 200,

@@ -2,18 +2,21 @@ import pinyin
 from flask import Blueprint, request
 from sqlalchemy import text, or_
 
-from user.model import User
+from redisInit import rs
 from .model import Charge, db
 
 charge_blueprint = Blueprint('charge', __name__)
 
 
 def getUid():
-    uid = request.headers.get('Authorization')
-    query_user = User.query.filter_by(id=uid).first()
-    if query_user is None:
+    token = request.headers.get('Authorization')
+    if token is None:
         return None
-    return query_user.id
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
+        return None
+    return uid.decode()
 
 
 @charge_blueprint.before_request
@@ -33,7 +36,7 @@ def getChargeItem():
     pagesize = int(request.json.get('pageSize'))
     paginate_obj = Charge.query.filter(
         Charge.is_deleted == 0,
-        Charge.status == 0,
+        Charge.status == 1,
         or_(Charge.name.like('%' + name + '%'),
             Charge.abbreviation.like(('%' + name + '%'))) if name is not None else text(''),
     ).paginate(pageno, pagesize, error_out=False)

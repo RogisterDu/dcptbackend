@@ -5,6 +5,7 @@ from flask import Blueprint, request
 from sqlalchemy import and_, text
 
 from patient.model import Patient
+from redisInit import rs
 from user.model import User
 from .model import Reserve, db
 
@@ -12,11 +13,14 @@ reserve_blueprint = Blueprint('reserve', __name__)
 
 
 def getUid():
-    uid = request.headers.get('Authorization')
-    query_user = User.query.filter_by(id=uid).first()
-    if query_user is None:
+    token = request.headers.get('Authorization')
+    if token is None:
         return None
-    return query_user.id
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
+        return None
+    return uid.decode()
 
 
 @reserve_blueprint.before_request

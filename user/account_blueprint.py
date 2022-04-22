@@ -3,17 +3,19 @@ import time
 from flask import Blueprint, request
 from sqlalchemy import text
 
+from redisInit import rs
 from .model import User, db
 
 account_blueprint = Blueprint('account', __name__)
 
 
 def getUid():
-    uid = request.headers.get('Authorization')
-    query_user = User.query.filter_by(id=uid).first()
-    if query_user is None:
+    token = request.headers.get('Authorization')
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
         return None
-    return query_user.id
+    return uid.decode()
 
 
 @account_blueprint.before_request

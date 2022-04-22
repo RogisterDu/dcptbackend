@@ -1,5 +1,8 @@
+import time
+
 from flask import Blueprint, request
 
+from redisInit import rs
 from .model import User
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -11,11 +14,13 @@ def login():
     password = request.json.get('password')
     user = User.query.filter_by(account=username, password=password).first()
     if user is not None:
+        timestamp = int(time.time())
+        token = "{}{}".format(user.account, timestamp)
+        rs.set(token, user.id, 36000)
         return {
             'code': 1,
-            'token': user.id,
+            'token': token,
             'userInfo': {
-                'id': user.id,
                 'name': user.realName,
                 'Avatar': 'https://joeschmoe.io/api/v1/random',
             }
@@ -25,5 +30,3 @@ def login():
             'code': 0,
             'message': '用户名或者密码错误'
         }
-
-

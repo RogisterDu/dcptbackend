@@ -8,12 +8,34 @@ import xlwt
 from flask import Blueprint, request
 from sqlalchemy import and_, text
 
+from redisInit import rs
 from task.model import Task
 from .model import Visitor
 from .model import db
 
 visitor_blueprint = Blueprint('visitor', __name__)
 executor = ThreadPoolExecutor()
+
+
+def getUid():
+    token = request.headers.get('Authorization')
+    if token is None:
+        return None
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
+        return None
+    return uid.decode()
+
+
+@visitor_blueprint.before_request
+def before_request():
+    print('before_request')
+    if getUid() is None:
+        return {
+                   'code': 0,
+                   'message': '请登录'
+               }, 401
 
 
 # 分页查询所有访客

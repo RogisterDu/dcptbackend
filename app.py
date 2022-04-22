@@ -1,5 +1,6 @@
 from flask import Flask
 
+from charge.charge_blueprint import charge_blueprint
 # class Config:
 #     HOST = 'IP地址'
 #     PORT = '端口'
@@ -15,27 +16,31 @@ from flask import Flask
 #     SQLALCHEMY_ECHO = True
 #
 #     SCHEDULER_API_ENABLED = True
-from charge.charge_blueprint import charge_blueprint
 # 引入数据库配置
 from config import Config
 from database import db
-# 引入蓝图
 from dicom.dicom_blueprint import dicom_blueprint
 from fee.fee_blueprint import fee_blueprint
 from medical.medical_blueprint import medical_blueprint
 from medical.template_blueprint import template_blueprint
 from patient.patient_blueprint import patient_blueprint
+# 引入redis
+from redisInit import rs
 from reservation.reserve_blueprint import reserve_blueprint
 from task.task_blueprint import task_blueprint
 from user.account_blueprint import account_blueprint
 from user.auth import auth_blueprint
 from vistor.visitor_blueprint import visitor_blueprint
 
+# 引入蓝图
+# 引入 flask-redis
+
 app = Flask(__name__)
 
 # 注册数据库
 app.config.from_object(Config)
 db.init_app(app)
+rs.init_app(app)
 
 # 注册蓝图
 app.register_blueprint(auth_blueprint)

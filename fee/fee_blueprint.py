@@ -2,7 +2,7 @@ import datetime
 
 from flask import Blueprint, request
 
-from user.model import User
+from redisInit import rs
 from .model import Fee, db, FeeDetail
 
 fee_blueprint = Blueprint('fee', __name__)
@@ -11,11 +11,14 @@ fee_blueprint = Blueprint('fee', __name__)
 # status 0 空收费项 1未收费 2欠费 3完成 4作废订单
 
 def getUid():
-    uid = request.headers.get('Authorization')
-    query_user = User.query.filter_by(id=uid).first()
-    if query_user is None:
+    token = request.headers.get('Authorization')
+    if token is None:
         return None
-    return query_user.id
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
+        return None
+    return uid.decode()
 
 
 @fee_blueprint.before_request

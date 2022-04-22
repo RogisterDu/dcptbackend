@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 
+from redisInit import rs
 from user.model import User
 from .model import Templet, db
 
@@ -7,11 +8,14 @@ template_blueprint = Blueprint('template', __name__)
 
 
 def getUid():
-    uid = request.headers.get('Authorization')
-    query_user = User.query.filter_by(id=uid).first()
-    if query_user is None:
+    token = request.headers.get('Authorization')
+    if token is None:
         return None
-    return query_user.id
+    uid = rs.get(token)
+    print(uid)
+    if uid is None:
+        return None
+    return uid.decode()
 
 
 @template_blueprint.before_request
