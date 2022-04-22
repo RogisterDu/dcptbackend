@@ -199,15 +199,22 @@ def exportAsExcel(task_id):
             ws.write(0, 1, "联系电话")
             ws.write(0, 2, "住址")
             ws.write(0, 3, "来访时间")
+            ws.write(0, 4, "省市区")
+            ws.write(0, 5, "体温")
+            ws.write(0, 6, "健康码")
             dataw = Visitor.query.all()
 
             if dataw is not None:
                 for i in range(0, len(dataw)):
                     visitor_i = dataw[i]
+                    format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(visitor_i.time))
                     ws.write(i + 1, 0, visitor_i.name)
                     ws.write(i + 1, 1, visitor_i.contact)
                     ws.write(i + 1, 2, visitor_i.address)
-                    ws.write(i + 1, 3, visitor_i.time)
+                    ws.write(i + 1, 3, format_time)
+                    ws.write(i + 1, 4, visitor_i.provinceDesc + visitor_i.cityDesc + visitor_i.disctrictDesc)
+                    ws.write(i + 1, 5, visitor_i.temperature)
+                    ws.write(i + 1, 5, ["绿码", "黄码", "红码"][visitor_i.greenCode])
             now = str(time.time())
             print('222')
             path = "/static/excel/"
