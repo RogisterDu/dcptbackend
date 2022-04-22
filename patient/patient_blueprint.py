@@ -217,7 +217,8 @@ def getPatientInfo(patient_id):
             'email': patient.email,
             'birth': datetime.datetime.strptime(str(patient.birthday), "%Y-%m-%d").strftime(
                 "%Y-%m-%d"),
-            'last_visit': patient.last_visit,
+            'last_visit': datetime.datetime.strptime(str(patient.last_visit), "%Y-%m-%d").strftime(
+                "%Y-%m-%d"),
             'PCR': json.loads(patient.pcr_json),
             'address': patient.address,
             'tags': json.loads(patient.tags),
