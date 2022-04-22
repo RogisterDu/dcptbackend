@@ -210,10 +210,10 @@ def exportAsExcel(task_id):
                     ws.write(i + 1, 3, visitor_i.time)
             now = str(time.time())
             print('222')
-            path = "\\static\\excel\\"
+            path = "/static/excel/"
             file_name = "visitor_" + now + ".xls"
-            basedir = '/static/excel/'
-            file_path = basedir
+            basedir = os.path.abspath(os.path.dirname(__file__))
+            file_path = basedir + path
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             file_path = file_path + file_name
