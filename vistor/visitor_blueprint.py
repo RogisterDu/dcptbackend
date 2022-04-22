@@ -215,7 +215,7 @@ def exportAsExcel(task_id):
                     ws.write(i + 1, 3, format_time)
                     ws.write(i + 1, 4, visitor_i.provinceDesc + visitor_i.cityDesc + visitor_i.disctrictDesc)
                     ws.write(i + 1, 5, visitor_i.temperature)
-                    ws.write(i + 1, 5, ["绿码", "黄码", "红码"][visitor_i.greenCode])
+                    ws.write(i + 1, 6, ["绿码", "黄码", "红码"][visitor_i.greenCode])
             now = str(time.time())
             print('222')
             path = "/static/excel/"
