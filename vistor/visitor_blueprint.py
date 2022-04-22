@@ -207,7 +207,8 @@ def exportAsExcel(task_id):
             if dataw is not None:
                 for i in range(0, len(dataw)):
                     visitor_i = dataw[i]
-                    format_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(visitor_i.time))
+                    format_time = datetime.datetime.strptime(str(visitor_i.time), "%Y-%m-%d %H:%M:%S").strftime(
+                        "%Y-%m-%d %H:%M:%S")
                     ws.write(i + 1, 0, visitor_i.name)
                     ws.write(i + 1, 1, visitor_i.contact)
                     ws.write(i + 1, 2, visitor_i.address)
