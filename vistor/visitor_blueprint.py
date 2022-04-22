@@ -218,7 +218,7 @@ def exportAsExcel(task_id):
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             file_path = file_path + file_name
-            print('333', file_path)
+            print('savePath', file_path)
             try:
                 f = open(file_path, 'r')
                 f.close()
