@@ -217,8 +217,8 @@ def getPatientInfo(patient_id):
             'email': patient.email,
             'birth': datetime.datetime.strptime(str(patient.birthday), "%Y-%m-%d").strftime(
                 "%Y-%m-%d"),
-            'last_visit': datetime.datetime.strptime(str(patient.last_visit), "%Y-%m-%d").strftime(
-                "%Y-%m-%d"),
+            'last_visit': datetime.datetime.strptime(str(patient.last_visit), "%Y-%m-%d %H:%M:%S").strftime(
+                "%Y-%m-%d %H:%M:%S"),
             'PCR': json.loads(patient.pcr_json),
             'address': patient.address,
             'tags': json.loads(patient.tags),
@@ -229,32 +229,31 @@ def getPatientInfo(patient_id):
         }
     }
 
-
-@patient_blueprint.route('/patient/list/query/fuzzy', methods=['GET'])
-def fuzzyQueryPatient():
-    fuzzy_query = request.args.get('fuzzy')
-    if fuzzy_query is None:
+    @patient_blueprint.route('/patient/list/query/fuzzy', methods=['GET'])
+    def fuzzyQueryPatient():
+        fuzzy_query = request.args.get('fuzzy')
+        if fuzzy_query is None:
+            return {
+                'code': 0,
+                'message': 'query is empty',
+                'data': {}
+            }
+        paginate_obj = Patient.query.filter(
+            Patient.is_deleted == 0,
+            or_(Patient.name.like('%' + fuzzy_query + '%'),
+                Patient.contact.like('%' + fuzzy_query + '%')) if fuzzy_query is not None else text('')).order_by(
+            db.desc(Patient.last_visit)).all()
+        # total = Patient.query.count()
+        patient_list = []
+        for info in paginate_obj:
+            patient_list.append({
+                'id': info.id,
+                'name': info.name,
+                'contact': info.contact,
+                # 'tags': json.loads(info.tags),
+            })
         return {
-            'code': 0,
-            'message': 'query is empty',
-            'data': {}
+            'code': 200,
+            'msg': 'success',
+            'data': patient_list,
         }
-    paginate_obj = Patient.query.filter(
-        Patient.is_deleted == 0,
-        or_(Patient.name.like('%' + fuzzy_query + '%'),
-            Patient.contact.like('%' + fuzzy_query + '%')) if fuzzy_query is not None else text('')).order_by(
-        db.desc(Patient.last_visit)).all()
-    # total = Patient.query.count()
-    patient_list = []
-    for info in paginate_obj:
-        patient_list.append({
-            'id': info.id,
-            'name': info.name,
-            'contact': info.contact,
-            # 'tags': json.loads(info.tags),
-        })
-    return {
-        'code': 200,
-        'msg': 'success',
-        'data': patient_list,
-    }
