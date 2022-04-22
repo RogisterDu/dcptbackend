@@ -202,6 +202,7 @@ def exportAsExcel(task_id):
             ws.write(0, 4, "省市区")
             ws.write(0, 5, "体温")
             ws.write(0, 6, "健康码")
+            ws.write(0, 7, "记录状态")
             dataw = Visitor.query.all()
 
             if dataw is not None:
@@ -216,6 +217,7 @@ def exportAsExcel(task_id):
                     ws.write(i + 1, 4, visitor_i.provinceDesc + visitor_i.cityDesc + visitor_i.disctrictDesc)
                     ws.write(i + 1, 5, visitor_i.temperature)
                     ws.write(i + 1, 6, ["绿码", "黄码", "红码"][visitor_i.greenCode])
+                    ws.write(i + 1, 7, ["正常", "作废记录"][visitor_i.is_deleted])
             now = str(time.time())
             print('222')
             path = "/static/excel/"
