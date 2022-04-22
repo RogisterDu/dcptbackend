@@ -214,9 +214,11 @@ def exportAsExcel(task_id):
             file_name = "visitor_" + now + ".xls"
             basedir = os.path.abspath(os.path.dirname(__file__))
             file_path = basedir + path
+            # file_path = path
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             file_path = file_path + file_name
+            print('333', file_path)
             try:
                 f = open(file_path, 'r')
                 f.close()
@@ -224,7 +226,7 @@ def exportAsExcel(task_id):
                 f = open(file_path, 'w')
             wb.save(file_path)
             query_task.status = 200
-            query_task.file_url = file_path
+            query_task.file_url = path + file_name
             db.session.add(query_task)
             db.session.commit()
             print('导出成功')
